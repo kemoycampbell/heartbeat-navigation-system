@@ -39,7 +39,7 @@ The heartbeat is considered successful when communication with the cellular towe
 
 
   ### Class Diagram
-  ```mermaid
+```mermaid
   classDiagram
     direction TB
 
@@ -165,7 +165,7 @@ The heartbeat is considered successful when communication with the cellular towe
 - Note: Estimated travel time is fixed for the purpose of demonstration.
 
 ### Sequence Diagram
-```mermaid
+``` mermaid
 sequenceDiagram
     autonumber
     participant Vehicle
@@ -203,7 +203,7 @@ sequenceDiagram
 ---
 
 ## How to Run
-1. Ensure that you have the .NET framework installed. .NET is a cross-platform framework that allows you to write applications in C#.
+1. Ensure that you have the [.NET core](https://dotnet.microsoft.com/en-us/download). .NET is a cross-platform framework that allows you to write applications in C#.
 2. Clone the project
 3. cd into the project folder
 4. Build and run the project using the following command:
