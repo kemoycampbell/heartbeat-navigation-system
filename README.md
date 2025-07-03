@@ -167,37 +167,40 @@ The heartbeat is considered successful when communication with the cellular towe
 ### Sequence Diagram
 ``` mermaid
 sequenceDiagram
-    autonumber
-    participant Vehicle
-    participant NavigationManager
-    participant INavigationDataSource as DataSource
-    participant HeartbeatMonitor
+  participant Vehicle as Vehicle
+  participant NavigationManager as NavigationManager
+  participant HeartbeatMonitor as HeartbeatMonitor
+  participant Cellular as Cellular
+  participant OfflineCache as OfflineCache
 
-    Note over Vehicle: Start navigation
-    Vehicle->>NavigationManager: Navigate(origin, destination)
-    NavigationManager->>DataSource: GetRoute(origin, destination)
-    DataSource-->>NavigationManager: Route
-    NavigationManager-->>Vehicle: Route with ETA
-
-    loop every 5s
-        Vehicle->>NavigationManager: UpdateNavigation(currentLocation)
-        NavigationManager->>DataSource: UpdateRoute(currentLocation)
-        DataSource-->>NavigationManager: UpdatedRoute
-        NavigationManager-->>Vehicle: Updated ETA
+  autonumber
+  Note over Vehicle: Start navigation
+  Vehicle ->> NavigationManager: Navigate(origin, destination)
+  NavigationManager ->> Cellular: GetRoute(origin, destination)
+  Cellular -->> NavigationManager: Route
+  NavigationManager -->> Vehicle: Route with ETA
+  loop every 5s
+    Vehicle ->> NavigationManager: UpdateNavigation(currentLocation)
+    alt Using Live Data
+      NavigationManager ->> Cellular: UpdateRoute(currentLocation)
+      Cellular -->> NavigationManager: UpdatedRoute
+    else Using Cache
+      NavigationManager ->> OfflineCache: UpdateRoute(currentLocation)
+      OfflineCache -->> NavigationManager: UpdatedRoute
     end
-
-    Note over HeartbeatMonitor: Monitor network heartbeat
-
-    loop every 1s
-        HeartbeatMonitor->>HeartbeatMonitor: HeartBeat()
-        alt Heartbeat fails 3 times
-            HeartbeatMonitor-->>NavigationManager: OnHeartBeatLost
-            NavigationManager->>NavigationManager: SwitchDataSource(Cache)
-        else Heartbeat restored
-            HeartbeatMonitor-->>NavigationManager: OnHeartBeatRestored
-            NavigationManager->>NavigationManager: SwitchDataSource(Cellular)
-        end
+    NavigationManager -->> Vehicle: Updated ETA
+  end
+  Note over HeartbeatMonitor: Monitor network heartbeat
+  loop every 1s
+    HeartbeatMonitor ->> HeartbeatMonitor: HeartBeat()
+    alt Heartbeat fails 3 times
+      HeartbeatMonitor -->> NavigationManager: OnHeartBeatLost
+      NavigationManager ->> NavigationManager: SwitchDataSource(OfflineCache)
+    else Heartbeat restored
+      HeartbeatMonitor -->> NavigationManager: OnHeartBeatRestored
+      NavigationManager ->> NavigationManager: SwitchDataSource(Cellular)
     end
+  end
 ```
 
 ---
